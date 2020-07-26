@@ -1,4 +1,2 @@
 .env
 .env.backup
-/download_data/keywords/*
-/download_data/urls/*
