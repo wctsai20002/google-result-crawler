@@ -5,6 +5,7 @@ from dotenv import load_dotenv, find_dotenv
 from django.core.validators import URLValidator
 from django.utils.text import get_valid_filename
 from bs4 import BeautifulSoup as bs
+from lxml import etree
 
 # load .env variable
 def load_env_var():
@@ -48,7 +49,7 @@ def load_txt_data(use_keyword, use_url):
 # wget keyword google search page
 # keywords: list
 # maximum_page: int
-def keyword_search_page(base_url, keywords, maximum_page):
+def download_keyword_data(base_url, keywords, maximum_page):
     for keyword in keywords:
         print("keyword : ", keyword)
         # make keyword dir
@@ -61,7 +62,6 @@ def keyword_search_page(base_url, keywords, maximum_page):
             print()
             continue
         
-        index_page_list = []
         for page in range(maximum_page):
             # make page dir
             page_path = keyword_path + "/page_" + str(page + 1)
@@ -75,23 +75,71 @@ def keyword_search_page(base_url, keywords, maximum_page):
 
             # wget google index page
             wget_download(search_url, index_page_path)
-            new_index_page_path = rename_index_page(index_page_path)
-            index_page_list.append(new_index_page_path)
-        
+            new_index_page_path = rename_orig_file(index_page_path, "index_page.html")
+
+            # wget result
+            download_and_replace_result(page_path, new_index_page_path)
+
         replace_page_number_href(keyword_path, maximum_page)
 
-def rename_index_page(path):
+def download_and_replace_result(page_path, index_page_path):
+    html_code = ""
+    with open(index_page_path, "r+", encoding="utf-8") as f:
+        html_code = f.read()
+    
+        # get results by xpath
+        selector = etree.HTML(html_code)
+        elements = selector.xpath('//div[@id="rso"]/div[@class="g"]/div[@class="rc"]/div[@class="r"]/a')
+        hrefs = [ele.xpath("@href")[0] for ele in elements]
+        titles = [ele.xpath("h3/text()")[0] for ele in elements]
+
+        # make result dir
+        for i, href in enumerate(hrefs):
+            vaild_filename = get_valid_filename(href)
+            result_path = page_path.rstrip("/") + "/" + vaild_filename
+            if not os.path.isdir(result_path):
+                os.mkdir(result_path)
+            else:
+                print("Duplicate result of : ", href)
+                continue
+
+            # wget result
+            wget_download(href, result_path)
+            new_result_path = rename_orig_file(result_path, "result_" + str(i + 1) + ".html")
+            print("new_result_path : ", new_result_path)
+
+            # replace result href
+            if new_result_path:
+                old_result_href = html.escape(href)
+                start = new_result_path.find(vaild_filename) + len(vaild_filename)
+                new_result_href = "../" + vaild_filename + new_result_path[start:]
+                html_code = html_code.replace(old_result_href, new_result_href)
+                print("replace old : ", old_result_href)
+                print("replace new : ", new_result_href)
+                print()
+        
+        # overwrite
+        f.seek(0)
+        f.write(html_code)
+        f.truncate()
+
+def rename_orig_file(path, file_name):
     # find .orig to know name of html
     html_name = ""
-    for f in os.listdir(path):
-        if f.endswith(".orig"):
-            html_name = f.rstrip(".orig") + ".html"
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            if f.endswith(".orig"):
+                new_root = root.replace("\\", "/") + "/"
+                tempt = new_root + f.rstrip(".orig") + ".html"
+                if os.path.isfile(tempt):
+                    html_name = tempt
+                    new_name = new_root + file_name
     
-    path = path.rstrip("/")
-    html_name = path + "/" + html_name
-    new_name = path + "/index_page.html"
-    os.rename(html_name, new_name)
-    return new_name
+    if html_name:
+        os.rename(html_name, new_name)
+        return new_name
+    else:
+        return None
 
 # path need to be specific keyword path like ./download_data/keywords/example keyword
 def replace_page_number_href(path, maximum_page):
@@ -142,12 +190,12 @@ def wget_download(url, path):
     wget_command = wget_command + local_path + user_agent + url
     os.system(wget_command)
 
-def crawler():
+def Crawler():
     env_map = load_env_var()
     print(env_map)
     keywords, urls = load_txt_data(env_map["USE_KEYWORD"], env_map["USE_URL"])
-    keyword_search_page(env_map["BASE_URL"], keywords, env_map["MAXIMUM_PAGE"])
+    download_keyword_data(env_map["BASE_URL"], keywords, env_map["MAXIMUM_PAGE"])
     
 
 if __name__ == "__main__":
-    crawler()
+    Crawler()
