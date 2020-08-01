@@ -1,5 +1,6 @@
 import os
 import html
+import requests
 import urllib.parse
 from dotenv import load_dotenv, find_dotenv
 from django.core.validators import URLValidator
@@ -128,12 +129,10 @@ def rename_orig_file(path, file_name):
     html_name = ""
     for root, dirs, files in os.walk(path):
         for f in files:
-            if f.endswith(".orig"):
+            if f.endswith(".html"):
                 new_root = root.replace("\\", "/") + "/"
-                tempt = new_root + f.rstrip(".orig") + ".html"
-                if os.path.isfile(tempt):
-                    html_name = tempt
-                    new_name = new_root + file_name
+                html_name = new_root + f
+                new_name = new_root + file_name
     
     if html_name:
         os.rename(html_name, new_name)
@@ -182,13 +181,23 @@ def replace_page_number_href(path, maximum_page):
             f.truncate()
 
 def wget_download(url, path):
+    download_raw_html(url, path)
     url = '"' + url + '"'
     path = '"' + path + '"'
     user_agent = ' --user-agent="User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36" '
     local_path = "-P " + path
-    wget_command = "wget -p -E -k -K -H -nH -q "
+    wget_command = "wget -p -E -k -K -H -nH -e robots=off "
     wget_command = wget_command + local_path + user_agent + url
     os.system(wget_command)
+
+def download_raw_html(url, path):
+    path = path.rstrip("/") + "/raw.html"
+    header = {"user-agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36"}
+    r = requests.get(url, headers=header)
+    if r.status_code == requests.codes.ok:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(r.text)
+
 
 def Crawler():
     env_map = load_env_var()
