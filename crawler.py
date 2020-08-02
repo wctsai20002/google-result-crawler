@@ -16,11 +16,12 @@ def load_env_var():
         maximum_page = int(os.getenv("MAXIMUM_PAGE"))
         use_keyword = str_to_bool(os.getenv("USE_KEYWORD"))
         use_url = str_to_bool(os.getenv("USE_URL"))
+        user_agent = os.getenv("USER_AGENT")
     except Exception as e:
         print("Make sure you have .env file and in correct format !!!")
         raise
     
-    return {"BASE_URL" : base_url, "MAXIMUM_PAGE" : maximum_page, "USE_KEYWORD" : use_keyword, "USE_URL" : use_url}
+    return {"BASE_URL" : base_url, "MAXIMUM_PAGE" : maximum_page, "USE_KEYWORD" : use_keyword, "USE_URL" : use_url, "USER_AGENT" : user_agent}
 
 def str_to_bool(word):
     return True if word.lower() == "true" else False
@@ -30,10 +31,10 @@ def load_txt_data(use_keyword, use_url):
     keywords = []
     urls = []
     if use_keyword:
-        with open("./keywords.txt", "r") as f:
+        with open("./keywords.txt", "r", encoding="utf-8") as f:
             keywords = [line.rstrip("\n") for line in f.readlines()]
     if use_url:
-        with open("./urls.txt", "r") as f:
+        with open("./urls.txt", "r", encoding="utf-8") as f:
             url_validate = URLValidator()
             for line in f.readlines():
                 line = line.rstrip("\n")
@@ -50,7 +51,7 @@ def load_txt_data(use_keyword, use_url):
 # wget keyword google search page
 # keywords: list
 # maximum_page: int
-def download_keyword_data(base_url, keywords, maximum_page):
+def download_keyword_data(base_url, keywords, maximum_page, user_agent):
     for keyword in keywords:
         print("keyword : ", keyword)
         # make keyword dir
@@ -75,8 +76,8 @@ def download_keyword_data(base_url, keywords, maximum_page):
             search_url = base_url + search_parameter
 
             # wget google index page
-            wget_download(search_url, index_page_path)
-            new_index_page_path = rename_orig_file(index_page_path, "index_page.html")
+            wget_download(search_url, index_page_path, user_agent, False)
+            new_index_page_path = rename_html_file(index_page_path, "index_page.html")
 
             # wget result
             download_and_replace_result(page_path, new_index_page_path)
@@ -96,7 +97,7 @@ def download_and_replace_result(page_path, index_page_path):
 
         # make result dir
         for i, href in enumerate(hrefs):
-            vaild_filename = get_valid_filename(href)
+            vaild_filename = get_valid_filename(href)[:20]
             result_path = page_path.rstrip("/") + "/" + vaild_filename
             if not os.path.isdir(result_path):
                 os.mkdir(result_path)
@@ -106,7 +107,7 @@ def download_and_replace_result(page_path, index_page_path):
 
             # wget result
             wget_download(href, result_path)
-            new_result_path = rename_orig_file(result_path, "result_" + str(i + 1) + ".html")
+            new_result_path = rename_html_file(result_path, "result_" + str(i + 1) + ".html")
             print("new_result_path : ", new_result_path)
 
             # replace result href
@@ -124,19 +125,24 @@ def download_and_replace_result(page_path, index_page_path):
         f.write(html_code)
         f.truncate()
 
-def rename_orig_file(path, file_name):
+def rename_html_file(path, file_name):
     # find .orig to know name of html
     html_name = ""
     for root, dirs, files in os.walk(path):
         for f in files:
+            new_root = root.replace("\\", "/") + "/"
             if f.endswith(".html"):
-                new_root = root.replace("\\", "/") + "/"
                 html_name = new_root + f
+                new_name = new_root + file_name
+            elif f.endswith(".html.backup"):
+                raw_html = new_root + f
                 new_name = new_root + file_name
     
     if html_name:
         os.rename(html_name, new_name)
         return new_name
+    elif raw_html:
+        os.rename(raw_html, new_name)
     else:
         return None
 
@@ -180,19 +186,22 @@ def replace_page_number_href(path, maximum_page):
             f.write(html_code)
             f.truncate()
 
-def wget_download(url, path):
-    download_raw_html(url, path)
+def wget_download(url, path, user_agent, download_raw = True):
+    # sometimes wget will failed, so backup by requests
+    if download_raw:
+        download_raw_html(url, path, user_agent)
     url = '"' + url + '"'
     path = '"' + path + '"'
-    user_agent = ' --user-agent="User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36" '
+    user_agent = ' --user-agent="User-Agent: ' + user_agent + '" '
     local_path = "-P " + path
     wget_command = "wget -p -E -k -K -H -nH -e robots=off "
     wget_command = wget_command + local_path + user_agent + url
     os.system(wget_command)
 
-def download_raw_html(url, path):
-    path = path.rstrip("/") + "/raw.html"
-    header = {"user-agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36"}
+# use requests to download html
+def download_raw_html(url, path, user_agent):
+    path = path.rstrip("/") + "/raw.html.backup"
+    header = {"user-agent" : user_agent}
     r = requests.get(url, headers=header)
     if r.status_code == requests.codes.ok:
         with open(path, "w", encoding="utf-8") as f:
@@ -203,7 +212,7 @@ def Crawler():
     env_map = load_env_var()
     print(env_map)
     keywords, urls = load_txt_data(env_map["USE_KEYWORD"], env_map["USE_URL"])
-    download_keyword_data(env_map["BASE_URL"], keywords, env_map["MAXIMUM_PAGE"])
+    download_keyword_data(env_map["BASE_URL"], keywords, env_map["MAXIMUM_PAGE"], env_map["USER_AGENT"])
     
 
 if __name__ == "__main__":
