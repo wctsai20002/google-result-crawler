@@ -129,7 +129,7 @@ def download_and_replace_result(page_path, index_page_path, user_agent):
 def download_url_data(urls, user_agent):
     for url in urls:
         vaild_filename = get_valid_filename(url)[:30]
-        url_path = ".download_data/urls/" + vaild_filename
+        url_path = "./download_data/urls/" + vaild_filename
         if not os.path.isdir(url_path):
             os.mkdir(url_path)
         else:
@@ -206,22 +206,22 @@ def wget_download(species, url, path, user_agent, download_raw = True):
     path = '"' + path + '"'
     user_agent = ' --user-agent="User-Agent: ' + user_agent + '" '
     local_path = "-P " + path
-    wget_command = "wget -p -E -k -K -H -nH -e robots=off "
+    wget_command = "wget -p -E -k -K -H -nH --no-check-certificate "
     wget_command = wget_command + local_path + user_agent + url
-    output_bytes = subprocess.check_output(wget_command, shell=True, stderr=subprocess.STDOUT)
-    log_path = "./download_data/" + species + "/download_log"
-    with open(log_path, "a", encoding="utf-8") as f:
-        f.write(output_bytes.decode("utf-8"))
+    os.system(wget_command)
+    # output_bytes = subprocess.check_output(wget_command, stderr=subprocess.STDOUT)
+    # log_path = "./download_data/" + species + "/download_log"
+    # with open(log_path, "a", encoding="utf-8") as f:
+    #     f.write(output_bytes.decode("utf-8"))
 
 # use requests to download html
 def download_raw_html(url, path, user_agent):
     path = path.rstrip("/") + "/raw.html.backup"
     header = {"user-agent" : user_agent}
-    r = requests.get(url, headers=header)
+    r = requests.get(url, headers=header, verify=False)
     if r.status_code == requests.codes.ok:
         with open(path, "w", encoding="utf-8") as f:
             f.write(r.text)
-
 
 def Crawler():
     env_map = load_env_var()
