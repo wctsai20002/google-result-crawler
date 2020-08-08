@@ -251,8 +251,8 @@ def download_raw_html(url, path, user_agent):
             f.write(r.text)
 
 def valid_filename_by_url(url):
-    url = url.lstrip("https://")
-    url = url.lstrip("http://")
+    url = url.replace("https://", "")
+    url = url.replace("http://", "")
     return get_valid_filename(url)[:50]
 
 def create_portal_index():
@@ -341,11 +341,11 @@ def create_portal_index():
             f.write(template_html)
         
 def Crawler():
-    # env_map = load_env_var()
-    # print(env_map)
-    # keywords, urls = load_txt_data(env_map["USE_KEYWORD"], env_map["USE_URL"])
-    # download_keyword_data(env_map["BASE_URL"], keywords, env_map["MAXIMUM_PAGE"], env_map["USER_AGENT"], env_map["DOWNLOAD_LOG"])
-    # download_url_data(urls, env_map["USER_AGENT"], env_map["DOWNLOAD_LOG"])
+    env_map = load_env_var()
+    print(env_map)
+    keywords, urls = load_txt_data(env_map["USE_KEYWORD"], env_map["USE_URL"])
+    download_keyword_data(env_map["BASE_URL"], keywords, env_map["MAXIMUM_PAGE"], env_map["USER_AGENT"], env_map["DOWNLOAD_LOG"])
+    download_url_data(urls, env_map["USER_AGENT"], env_map["DOWNLOAD_LOG"])
     create_portal_index()
 
 if __name__ == "__main__":
