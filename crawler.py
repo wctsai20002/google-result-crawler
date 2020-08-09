@@ -149,7 +149,7 @@ def rename_html_file(path, file_name):
     for root, dirs, files in os.walk(path):
         for f in files:
             new_root = root.replace("\\", "/") + "/"
-            if f.endswith(".html") and "robots.txt" not in f:
+            if (f.endswith(".html") or f.enswith(".htm")) and "robots.txt" not in f:
                 html_name = new_root + f
                 new_name = new_root + file_name
             elif f.endswith(".html.backup"):
