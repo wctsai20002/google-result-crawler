@@ -64,7 +64,6 @@ def load_txt_data(use_keyword, use_url):
 # maximum_page: int
 def download_keyword_data(base_url, keywords, maximum_page, user_agent, download_log):
     for keyword in keywords:
-        print("keyword : ", keyword)
         # make keyword dir
         keyword_path = "./download_data/keywords/" + keyword
         if not os.path.isdir(keyword_path):
@@ -119,7 +118,6 @@ def download_and_replace_result(page_path, index_page_path, user_agent, download
             # wget result
             wget_download("keywords", href, result_path, user_agent, download_log)
             new_result_path = rename_html_file(result_path, "result_" + str(i + 1) + ".html")
-            print("new_result_path : ", new_result_path)
 
             # replace result href
             if new_result_path:
@@ -127,9 +125,6 @@ def download_and_replace_result(page_path, index_page_path, user_agent, download
                 start = new_result_path.find(vaild_filename) + len(vaild_filename)
                 new_result_href = "../" + vaild_filename + new_result_path[start:]
                 html_code = html_code.replace(old_result_href, new_result_href)
-                print("replace old : ", old_result_href)
-                print("replace new : ", new_result_href)
-                print()
         
         # overwrite
         f.seek(0)
@@ -224,7 +219,7 @@ def wget_download(species, url, path, user_agent, download_log, download_raw = T
     path = '"' + path + '"'
     user_agent = ' --user-agent="User-Agent: ' + user_agent + '" '
     local_path = "-P " + path
-    wget_command = "wget -p -E -k -K -H -nH --no-check-certificate "
+    wget_command = "wget -p -E -k -K -H -nH -e robots=off --convert-links --no-check-certificate --restrict-file-names=windows "
     wget_command = wget_command + local_path + user_agent + url
     log_path = "./download_data/" + species + "/download_log"
     try:
@@ -235,7 +230,7 @@ def wget_download(species, url, path, user_agent, download_log, download_raw = T
     except Exception as e:
         if download_log:
             with open(log_path, "a", encoding="utf-8") as f:
-                error_message = "subprocess.check_output have an error, use os. systeminstead !!!\n"
+                error_message = "subprocess.check_output have an error, use os.system instead !!!\n"
                 error_message += (str(e) + "\n")
                 error_message += ("Download " + url + " by wget command : " + wget_command + "\n")
                 f.write(error_message)
@@ -342,7 +337,6 @@ def create_portal_index():
         
 def Crawler():
     env_map = load_env_var()
-    print(env_map)
     keywords, urls = load_txt_data(env_map["USE_KEYWORD"], env_map["USE_URL"])
     download_keyword_data(env_map["BASE_URL"], keywords, env_map["MAXIMUM_PAGE"], env_map["USER_AGENT"], env_map["DOWNLOAD_LOG"])
     download_url_data(urls, env_map["USER_AGENT"], env_map["DOWNLOAD_LOG"])
