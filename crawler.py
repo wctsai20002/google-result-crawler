@@ -1,6 +1,7 @@
 import os
 import time
 import html
+import gzip
 import requests
 import subprocess
 import urllib.parse
@@ -156,11 +157,18 @@ def rename_html_file(path, file_name):
                 raw_html = new_root + f
                 new_name = new_root + file_name
     
-    if html_name:
-        os.rename(html_name, new_name)
-        return new_name
-    elif raw_html:
-        os.rename(raw_html, new_name)
+    if html_name or raw_html:
+        old_name = html_name if html_name else raw_html
+        os.rename(old_name, new_name)
+
+        # decompress gzip file and delete
+        decompress_gzip(path)
+        with open(new_name, "r+", encoding="utf-8", errors="ignore") as f:
+            html_code = f.read()
+            html_code = html_code.replace(".js.gz", ".js").replace(".css.gz", ".css")
+            f.seek(0)
+            f.write(html_code)
+            f.truncate()
         return new_name
     else:
         return None
@@ -249,6 +257,20 @@ def valid_filename_by_url(url):
     url = url.replace("https://", "")
     url = url.replace("http://", "")
     return get_valid_filename(url)[:50]
+
+def decompress_gzip(path):
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            new_root = root.replace("\\", "/") + "/"
+            if f.endswith(".js.gz") or f.endswith(".css.gz"):
+                gzip_content = b""
+                orig_filename = new_root + f
+                with gzip.open(orig_filename, "rb") as gzip_file:
+                    gzip_content = gzip_file.read()
+                os.remove(orig_filename)
+                unzip_filename = orig_filename.rstrip(".gz")
+                with open(unzip_filename, "wb") as unzip_file:
+                    unzip_file.write(gzip_content)
 
 def create_portal_index():
     # get keywords data
