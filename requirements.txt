@@ -1,0 +1,7 @@
+html
+gzip
+requests
+dotenv
+django
+beautifulsoup4
+lxml

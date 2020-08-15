@@ -227,7 +227,8 @@ def wget_download(species, url, path, user_agent, download_log, download_raw = T
     path = '"' + path + '"'
     user_agent = ' --user-agent="User-Agent: ' + user_agent + '" '
     local_path = "-P " + path
-    wget_command = "wget -p -E -k -K -H -nH -e robots=off --convert-links --no-check-certificate --restrict-file-names=windows "
+    wget_command = "wget -q -p -E -k -K -H -nH -e robots=off --convert-links --no-check-certificate --restrict-file-names=windows "
+    wget_command = wget_command if download_log else wget_command.replace("-q ", "")
     wget_command = wget_command + local_path + user_agent + url
     log_path = "./download_data/" + species + "/download_log"
     try:
