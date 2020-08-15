@@ -285,7 +285,7 @@ def create_portal_index():
         for f in files:
             if page_1_partial_path in new_root and f == index_page_name:
                 keyword = new_root.replace(keywords_path, "")
-                keyword = keyword.rstrip(page_1_partial_path)
+                keyword = keyword.replace(page_1_partial_path, "")
                 page_1_path = new_root + index_page_name
                 maxpage = len(glob((keywords_path + keyword).rstrip("/") + "/*/"))
                 keywords_keyword_path.append([keyword, page_1_path, maxpage])
