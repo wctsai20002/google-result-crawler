@@ -26,5 +26,5 @@ copy or rename .env.example to make .env file, and change variables according to
 
 ### Start
 ```
-python ./crawler.py or python3 ./crawler.py
+python ./crawler.py
 ```
