@@ -104,7 +104,6 @@ def download_and_replace_result(page_path, index_page_path, user_agent, download
         selector = etree.HTML(html_code)
         elements = selector.xpath('//div[@id="rso"]/div[@class="g"]/div[@class="rc"]/div[@class="r"]/a')
         hrefs = [ele.xpath("@href")[0] for ele in elements]
-        titles = [ele.xpath("h3/text()")[0] for ele in elements]
 
         # make result dir
         for i, href in enumerate(hrefs):
@@ -228,7 +227,7 @@ def wget_download(species, url, path, user_agent, download_log, download_raw = T
     user_agent = ' --user-agent="User-Agent: ' + user_agent + '" '
     local_path = "-P " + path
     wget_command = "wget -q -p -E -k -K -H -nH -e robots=off --convert-links --no-check-certificate --restrict-file-names=windows "
-    wget_command = wget_command if download_log else wget_command.replace("-q ", "")
+    wget_command = wget_command if download_log.replace("-q ", "") else wget_command
     wget_command = wget_command + local_path + user_agent + url
     log_path = "./download_data/" + species + "/download_log"
     try:
