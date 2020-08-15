@@ -18,13 +18,16 @@ git clone https://github.com/wctsai20002/google-result-crawler.git
 
 #### Install modules
 ```
-pip install -r ./requirements.txt
+pip3 install -r ./requirements.txt
 ```
 
 #### Make .env file
 copy or rename .env.example to make .env file, and change variables according to your needs
 
+#### Required data
+put keywords and urls you want to download in keywords.txt and urls.txt line by line
+
 ### Start
 ```
-python ./crawler.py
+python3 ./crawler.py
 ```
