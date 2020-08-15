@@ -1,6 +1,5 @@
-html
 requests
-dotenv
+python-dotenv
 django
 beautifulsoup4
 lxml
