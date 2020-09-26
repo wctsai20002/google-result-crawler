@@ -29,7 +29,11 @@ put keywords and urls you want to download in keywords.txt and urls.txt line by 
 
 ### Start
 ```
-python3 ./crawler.py
+python3 crawler.py
+```
+or
+```
+python crawler.py
 ```
 
 After process finished, open the file [./portal/index.html](https://github.com/wctsai20002/google-result-crawler/blob/master/portal/index.html) to see download data.
