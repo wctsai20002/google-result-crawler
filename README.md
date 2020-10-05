@@ -9,7 +9,7 @@ To look over download data, there is a html [(./portal/index.html)](https://gith
 ### Requirements
 - [wget for windows](http://gnuwin32.sourceforge.net/packages/wget.htm)
 
-### Getting the code
+### Clone
 ```
 git clone https://github.com/wctsai20002/google-result-crawler.git
 ```
