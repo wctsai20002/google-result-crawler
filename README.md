@@ -36,4 +36,4 @@ or
 python crawler.py
 ```
 
-After process finished, open the file [./portal/index.html](https://github.com/wctsai20002/google-result-crawler/blob/master/portal/index.html) to see download data.
+After process finished, open the file [./portal/index.html](https://github.com/wctsai20002/google-result-crawler/blob/master/portal/index.html) by browser to see download data.
