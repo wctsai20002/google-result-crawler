@@ -116,8 +116,11 @@ def download_and_replace_result(page_path, index_page_path, user_agent, download
                 continue
 
             # wget result
-            wget_download("keywords", href, result_path, user_agent, download_log)
-            new_result_path = rename_html_file(result_path, "result_" + str(i + 1) + ".html")
+            try:
+                wget_download("keywords", href, result_path, user_agent, download_log)
+                new_result_path = rename_html_file(result_path, "result_" + str(i + 1) + ".html")
+            except:
+                new_result_path = None
 
             # replace result href
             if new_result_path:

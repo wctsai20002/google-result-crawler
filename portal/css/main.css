@@ -40,7 +40,7 @@ th {
 }
 
 html, body {
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .my_icon {
