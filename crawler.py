@@ -102,7 +102,7 @@ def download_and_replace_result(page_path, index_page_path, user_agent, download
     
         # get results by xpath
         selector = etree.HTML(html_code)
-        elements = selector.xpath('//div[@id="rso"]/div[@class="g"]/div[@class="rc"]/div/a')
+        elements = selector.xpath('//div[@id="rso"]//div[@class="g"]/div/div[1]/a')
         hrefs = [ele.xpath("@href")[0] for ele in elements]
 
         # make result dir
